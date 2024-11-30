@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model countries {
+  id          Int     @id @default(autoincrement())
+  description String?
+}
+
+model devices {
+  id         Int       @id @default(autoincrement())
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  vpn_key    String?
+  name       String?
+  user_id    Int
+  uuid       String?   @unique(map: "device_uuid")
+  country_id Int?
+  is_active  Boolean   @default(true)
+}
+
+model devices_countries {
+  id         Int  @id @default(autoincrement())
+  device_id  Int?
+  country_id Int?
+}
+
+model devices_servers {
+  id               Int      @id @default(autoincrement())
+  device_id        Int?
+  server_id        Int?
+  server_port      Int?
+  server_password  String?
+  server_method    String?
+  country_id       Int?
+  use_traffic      BigInt?  @default(0)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  ip               String?
+  is_active        Boolean  @default(true)
+  server_unique_id Int?
+  remote_active    Boolean  @default(true)
+  created_remote   Boolean  @default(true)
+  is_online        Boolean  @default(false)
+}
+
+model log {
+  id         BigInt    @id @default(autoincrement())
+  type       String?
+  user_id    Int?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model payment {
+  id         Int       @id @default(autoincrement())
+  date       DateTime? @db.Timestamptz(6)
+  user_id    Int?
+  days       Int?
+  payment_id String?
+  paid       Boolean?  @default(false)
+  id_billing String?
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  trial      Boolean?  @default(false)
+  amount     Float?
+}
+
+model servers {
+  id           Int     @id @default(autoincrement())
+  ip           String?
+  country_id   Int?
+  key          String?
+  port         String?
+  configurated Boolean @default(false)
+}
+
+model tokens {
+  token      String     @unique
+  exp        DateTime
+  userId     String
+  user_agent String
+  users_auth users_auth @relation(fields: [userId], references: [id])
+}
+
+model users {
+  id                Int       @id @default(autoincrement())
+  telegram_id       String?    @unique(map: "users_unique_telegram_id")
+  name              String?
+  reccurent         Boolean?  @default(true)
+  email             String?
+  id_user_invite    Int?
+  first_enter       Boolean?  @default(false)
+  ref_balance       Int?      @default(0)
+  reccurent_pay     DateTime? @db.Timestamptz(6)
+  push              DateTime? @db.Timestamptz(6)
+  balance           Float    @default(0)
+  date_daily        DateTime? @default(now()) @db.Timestamptz(6)
+  last_succes_daily Boolean?  @default(false)
+  alert_push        Boolean?  @default(false)
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+  first_marketing   Boolean?  @default(false)
+  push_null_money   Boolean?  @default(false)
+  name_partner      String?
+  admission_ref     Boolean?  @default(false)
+  tg_username       String?
+  eror_push         Boolean?  @default(false)
+  null_deices_push  Boolean?  @default(false)
+}
+
+model users_auth {
+  id         String   @id
+  email      String   @unique
+  password   String
+  created_at DateTime @default(now())
+  updated_at DateTime
+  roles      Role[]
+  tokens     tokens[]
+}
+
+model users_countries {
+  id         Int  @id @default(autoincrement())
+  user_id    Int?
+  country_id Int?
+}
+
+model users_servers {
+  id               Int      @id @default(autoincrement())
+  user_id          Int?
+  server_id        Int?
+  server_port      Int?
+  server_password  String?
+  server_method    String?
+  country_id       Int?
+  use_traffic      BigInt?  @default(0)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  ip               String?
+  is_active        Boolean  @default(true)
+  server_unique_id Int?
+}
+
+model wallet {
+  user_id Int      @id
+  balance Decimal? @db.Decimal
+}
+
+enum Role {
+  ADMIN
+  USER
+}
